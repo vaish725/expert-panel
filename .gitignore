@@ -1,0 +1,33 @@
+# internal planning doc, never published
+prd.md
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# environment / secrets
+.env
+.env.*
+!.env.example
+
+# node / frontend
+node_modules/
+dist/
+build/
+.vite/
+
+# generated debate reports and local db
+reports/*
+!reports/.gitkeep
+*.sqlite3
+*.db
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
