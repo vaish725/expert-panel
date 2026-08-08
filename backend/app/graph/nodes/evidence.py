@@ -8,8 +8,8 @@ work from this snapshot plus any user-uploaded documents.
 import sys
 from pathlib import Path
 
-from langchain_anthropic import ChatAnthropic
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_openai import ChatOpenAI
 
 from app.config import settings
 from app.graph.state import DecisionState
@@ -23,11 +23,11 @@ decision's details, not generic advice searches."""
 _EVIDENCE_SERVER_PATH = Path(__file__).resolve().parents[2] / "mcp_servers" / "evidence_server" / "server.py"
 
 
-def _build_query_llm() -> ChatAnthropic:
-    return ChatAnthropic(
+def _build_query_llm() -> ChatOpenAI:
+    return ChatOpenAI(
         model=settings.structured_model,
         temperature=0,
-        api_key=settings.anthropic_api_key,
+        api_key=settings.openai_api_key,
     ).with_structured_output(EvidenceQueries)
 
 
