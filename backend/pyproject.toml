@@ -22,3 +22,9 @@ dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
 ]
+
+[tool.pytest.ini_options]
+# lets "app.*" imports resolve during test collection without a src layout
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"

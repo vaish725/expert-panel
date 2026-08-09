@@ -1,7 +1,8 @@
 """LangGraph state schema for a debate: the single source of truth the graph
 reads from and writes to at every node."""
 
-from typing import Optional, TypedDict
+import operator
+from typing import Annotated, Optional, TypedDict
 
 
 class PersonaConfig(TypedDict):
@@ -52,7 +53,9 @@ class DecisionState(TypedDict):
     user_context: str
     evidence: list[dict]  # {source, snippet, url}
     personas: list[PersonaConfig]
-    transcript: list[Turn]
+    # 4 persona nodes write here in parallel each round, so writes are
+    # concatenated (operator.add) rather than one overwriting another
+    transcript: Annotated[list[Turn], operator.add]
     claims_ledger: list[Claim]
     round_number: int
     min_rounds: int

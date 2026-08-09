@@ -5,6 +5,8 @@ claim classification, synthesis) constrains its LLM call to one of these
 schemas via structured output, so downstream code never has to parse prose.
 """
 
+from typing import Literal, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -33,3 +35,30 @@ class EvidenceQueries(BaseModel):
     queries grounded in the decision's specifics, issued once before round 1."""
 
     queries: list[str] = Field(description="2 to 4 targeted web search queries.")
+
+
+class ClaimClassification(BaseModel):
+    """One distinct assertion found in a round's persona turns, classified
+    against the existing claims ledger. Paraphrases of an existing claim must
+    be recognized as restatements/resolutions, not filed as new claims."""
+
+    action: Literal["new", "restatement", "resolution"] = Field(
+        description="Whether this assertion is a new claim, a restatement of an "
+        "existing one, or a resolution (settles/concedes) of an existing one."
+    )
+    raised_by: str = Field(description="Persona who made this assertion this round.")
+    text: str = Field(description="The claim text, for 'new' actions. Ignored otherwise.")
+    stance: str = Field(
+        default="neutral", description="Which option this claim favors, or 'neutral'. Only used for 'new'."
+    )
+    target_claim_id: Optional[str] = Field(
+        default=None,
+        description="For 'restatement' or 'resolution': the existing ledger claim id this refers to.",
+    )
+
+
+class RoundExtraction(BaseModel):
+    """Output of the extract_claims node: every distinct assertion raised
+    this round, across all 4 persona turns, classified in one structured call."""
+
+    classifications: list[ClaimClassification]

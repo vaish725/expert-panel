@@ -33,16 +33,29 @@ async def run_sample_debate() -> None:
         "human_approved": False,
     }
 
-    result = await graph.ainvoke(initial_state)
+    # each round is several graph steps (4 parallel personas, extraction,
+    # convergence check); the default recursion limit is too low for 6 rounds
+    result = await graph.ainvoke(initial_state, config={"recursion_limit": 60})
 
     print(f"Decision: {result['decision_question']}")
     print(f"Options: {result['options']}")
     print(f"Evidence gathered: {len(result['evidence'])} items")
     for item in result["evidence"]:
         print(f"  - {item['source']} ({item['url']})")
+
     print("\nTranscript:")
     for turn in result["transcript"]:
         print(f"[round {turn['round']}] {turn['persona']}:\n{turn['content']}\n")
+
+    print("Claims ledger:")
+    for claim in result["claims_ledger"]:
+        status = "contested" if claim["contested"] else f"resolved (round {claim['resolved_round']})"
+        print(f"  {claim['id']} [{claim['stance']}, {status}, reinforced x{claim['reinforced_count']}]: {claim['text']}")
+
+    print(
+        f"\nConverged after round {result['round_number']} "
+        f"(forced={result['forced']}), {len(result['claims_ledger'])} total claims."
+    )
 
 
 if __name__ == "__main__":
