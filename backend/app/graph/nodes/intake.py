@@ -4,7 +4,7 @@ Uses a low-temperature structured-output call so implicit stakes and
 constraints are surfaced for confirmation rather than silently assumed.
 """
 
-from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 
 from app.config import settings
 from app.graph.state import DecisionState
@@ -17,12 +17,12 @@ the user implied but did not say outright. Do not invent stakes that aren't reas
 implied by the text."""
 
 
-def _build_intake_llm() -> ChatOpenAI:
+def _build_intake_llm() -> ChatAnthropic:
     """Low temperature: consistency matters more than voice at this stage."""
-    return ChatOpenAI(
+    return ChatAnthropic(
         model=settings.structured_model,
         temperature=0,
-        api_key=settings.openai_api_key,
+        api_key=settings.anthropic_api_key,
     ).with_structured_output(IntakeExtraction)
 
 

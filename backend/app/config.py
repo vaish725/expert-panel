@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # LLM provider
-    openai_api_key: str = ""
-    persona_model: str = "gpt-4.1"
-    structured_model: str = "gpt-4.1"
+    anthropic_api_key: str = ""
+    persona_model: str = "claude-sonnet-5"
+    structured_model: str = "claude-sonnet-5"
 
     # evidence-server search backend
     serper_api_key: str = ""
