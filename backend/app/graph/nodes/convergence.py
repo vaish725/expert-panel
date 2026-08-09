@@ -6,8 +6,6 @@ to write) and exposes a routing function for the conditional edge, which
 reads state but never mutates it.
 """
 
-from langgraph.graph import END
-
 from app.graph.convergence import check_convergence
 from app.graph.personas.prompts import PERSONAS
 from app.graph.state import DecisionState
@@ -33,7 +31,7 @@ def check_convergence_node(state: DecisionState) -> dict:
 
 def route_after_convergence(state: DecisionState) -> str | list[str]:
     """Conditional edge: loop back to all 4 persona nodes for another round,
-    or stop. Pure read of already-computed state, no side effects."""
+    or proceed to synthesis. Pure read of already-computed state, no side effects."""
     if state["converged"]:
-        return END
+        return "synthesize"
     return PERSONA_NODE_NAMES

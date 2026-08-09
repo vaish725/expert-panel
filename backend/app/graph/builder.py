@@ -1,8 +1,8 @@
 """Assembles the LangGraph StateGraph.
 
-Milestone 2 scope: intake -> gather_evidence -> 4 parallel personas ->
+Full v1 loop: intake -> gather_evidence -> 4 parallel personas ->
 extract_claims -> check_convergence, looping back to the personas until
-convergence. Synthesis, human review, and export are added in milestone 3.
+convergence, then synthesize -> [pause for human review] -> export.
 """
 
 from langgraph.graph import StateGraph
@@ -10,8 +10,10 @@ from langgraph.graph import StateGraph
 from app.graph.nodes.convergence import PERSONA_NODE_NAMES, check_convergence_node, route_after_convergence
 from app.graph.nodes.debate import persona_contrarian, persona_optimist, persona_pragmatist, persona_skeptic
 from app.graph.nodes.evidence import gather_evidence_node
+from app.graph.nodes.export import export_node
 from app.graph.nodes.extraction import extract_claims_node
 from app.graph.nodes.intake import intake_node
+from app.graph.nodes.synthesis import synthesize_node
 from app.graph.state import DecisionState
 
 _PERSONA_NODE_FUNCS = {
@@ -22,8 +24,13 @@ _PERSONA_NODE_FUNCS = {
 }
 
 
-def build_graph():
-    """Compile the debate StateGraph."""
+def build_graph(checkpointer=None):
+    """Compile the debate StateGraph.
+
+    A checkpointer is required for the human-review pause to be a real pause
+    (survives process restarts/browser disconnects) rather than an in-memory
+    block; pass None only for structural checks that never cross the interrupt.
+    """
     graph = StateGraph(DecisionState)
 
     graph.add_node("intake", intake_node)
@@ -32,6 +39,8 @@ def build_graph():
         graph.add_node(node_name, _PERSONA_NODE_FUNCS[node_name])
     graph.add_node("extract_claims", extract_claims_node)
     graph.add_node("check_convergence", check_convergence_node)
+    graph.add_node("synthesize", synthesize_node)
+    graph.add_node("export", export_node)
 
     graph.set_entry_point("intake")
     graph.add_edge("intake", "gather_evidence")
@@ -43,7 +52,10 @@ def build_graph():
         graph.add_edge(node_name, "extract_claims")
 
     graph.add_edge("extract_claims", "check_convergence")
-    # loop back to all 4 personas for another round, or stop
+    # loop back to all 4 personas for another round, or proceed to synthesis
     graph.add_conditional_edges("check_convergence", route_after_convergence)
 
-    return graph.compile()
+    graph.add_edge("synthesize", "export")
+
+    # pauses here until a human approves; export only runs after human_approved
+    return graph.compile(checkpointer=checkpointer, interrupt_before=["export"])

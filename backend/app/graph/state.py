@@ -66,3 +66,6 @@ class DecisionState(TypedDict):
     forced: bool
     final_recommendation: Optional[StructuredRecommendation]
     human_approved: bool
+    # path to the generated report, set by the export node after approval;
+    # not in the PRD's base schema but needed to report the result afterward
+    exported_report_path: Optional[str]

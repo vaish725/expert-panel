@@ -8,6 +8,7 @@ output (not string similarity) so paraphrases are recognized correctly.
 from langchain_anthropic import ChatAnthropic
 
 from app.config import settings
+from app.graph.ledger import render_ledger
 from app.graph.state import Claim, DecisionState
 from app.models.schemas import RoundExtraction
 
@@ -30,14 +31,6 @@ def _build_extraction_llm() -> ChatAnthropic:
     ).with_structured_output(RoundExtraction)
 
 
-def _render_ledger(ledger: list[Claim]) -> str:
-    if not ledger:
-        return "(empty)"
-    return "\n".join(
-        f"- {c['id']} [{c['stance']}, {'contested' if c['contested'] else 'resolved'}]: {c['text']}" for c in ledger
-    )
-
-
 def _render_round_turns(transcript: list, round_number: int) -> str:
     turns = [t for t in transcript if t["round"] == round_number]
     return "\n\n".join(f"{t['persona']}:\n{t['content']}" for t in turns)
@@ -48,7 +41,7 @@ async def extract_claims_node(state: DecisionState) -> dict:
     updated ledger plus this round's new/resolved counts (used by convergence)."""
     llm = _build_extraction_llm()
     prompt = (
-        f"Existing claims ledger:\n{_render_ledger(state['claims_ledger'])}\n\n"
+        f"Existing claims ledger:\n{render_ledger(state['claims_ledger'])}\n\n"
         f"Round {state['round_number']} persona turns:\n"
         f"{_render_round_turns(state['transcript'], state['round_number'])}"
     )

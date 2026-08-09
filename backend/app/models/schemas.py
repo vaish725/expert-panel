@@ -62,3 +62,31 @@ class RoundExtraction(BaseModel):
     this round, across all 4 persona turns, classified in one structured call."""
 
     classifications: list[ClaimClassification]
+
+
+class TradeoffItem(BaseModel):
+    """One pro/con line in the synthesis tradeoff table, citing its source claim."""
+
+    claim_id: str = Field(description="A claim id from the ledger backing this tradeoff point.")
+    direction: Literal["pro", "con"]
+
+
+class SynthesisOutput(BaseModel):
+    """Output of the synthesize node's structured-output LLM call.
+
+    unresolved_disagreements is deliberately not part of this schema: it is
+    derived directly from the ledger's contested claims in code, rather than
+    left to the model to recall correctly.
+    """
+
+    recommended_option: Optional[str] = Field(
+        default=None,
+        description="One of the decision's options, or null if the ledger is genuinely balanced.",
+    )
+    tradeoffs: dict[str, list[TradeoffItem]] = Field(
+        description="Per-option pros/cons, each citing a claim id from the ledger."
+    )
+    confidence_note: str = Field(
+        description="Plain-language statement of how settled vs. contested the ledger is. "
+        "If recommended_option is null, explain why the ledger is genuinely balanced here."
+    )

@@ -5,6 +5,7 @@ prompted constraint that keeps its output machine-parseable downstream (the
 Contrarian's claim-ID references, the Pragmatist's ungrounded-claim flags).
 """
 
+from app.graph.ledger import render_ledger
 from app.graph.state import DecisionState, PersonaConfig
 
 PERSONAS: list[PersonaConfig] = [
@@ -68,10 +69,7 @@ def render_round_prompt(state: DecisionState, persona: PersonaConfig) -> str:
         f"[round {t['round']}] {t['persona']}: {t['content']}" for t in state.get("transcript", [])
     ) or "(no prior turns)"
 
-    ledger_block = "\n".join(
-        f"- {c['id']} ({c['stance']}, {'contested' if c['contested'] else 'resolved'}): {c['text']}"
-        for c in state.get("claims_ledger", [])
-    ) or "(no claims raised yet)"
+    ledger_block = render_ledger(state.get("claims_ledger", []))
 
     return (
         f"Decision: {state['decision_question']}\n"
