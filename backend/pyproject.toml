@@ -14,7 +14,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
     "python-dotenv>=1.2.2",
-    "tavily-python>=0.7.27",
+    "requests>=2.34.2",
 ]
 
 [dependency-groups]

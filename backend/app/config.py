@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     structured_model: str = "gpt-4.1"
 
     # evidence-server search backend
-    tavily_api_key: str = ""
+    serper_api_key: str = ""
 
     # debate bounds (overridable per debate at intake time, these are defaults)
     min_rounds: int = 2

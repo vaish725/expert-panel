@@ -1,16 +1,19 @@
 """Custom MCP server exposing web search as a tool for the evidence node.
 
-Wraps Tavily behind the MCP protocol (via the official Python SDK) rather
-than calling the search API directly, so evidence gathering is reachable
-through the same MCP client machinery as any other tool server.
+Wraps Serper (Google search results API) behind the MCP protocol (via the
+official Python SDK) rather than calling the search API directly, so evidence
+gathering is reachable through the same MCP client machinery as any other
+tool server.
 """
 
+import requests
 from mcp.server.fastmcp import FastMCP
-from tavily import TavilyClient
 
 from app.config import settings
 
 mcp = FastMCP("evidence-server")
+
+SERPER_ENDPOINT = "https://google.serper.dev/search"
 
 
 @mcp.tool()
@@ -21,15 +24,24 @@ def search_web(query: str, max_results: int = 4) -> list[dict]:
         query: the search query, grounded in the decision's specifics.
         max_results: how many results to return (2-4 typical per PRD).
     """
-    client = TavilyClient(api_key=settings.tavily_api_key)
-    response = client.search(query=query, max_results=max_results)
+    response = requests.post(
+        SERPER_ENDPOINT,
+        headers={
+            "X-API-KEY": settings.serper_api_key,
+            "Content-Type": "application/json",
+        },
+        json={"q": query, "num": max_results},
+        timeout=15,
+    )
+    response.raise_for_status()
+    organic_results = response.json().get("organic", [])
     return [
         {
             "title": result.get("title", ""),
-            "snippet": result.get("content", ""),
-            "url": result.get("url", ""),
+            "snippet": result.get("snippet", ""),
+            "url": result.get("link", ""),
         }
-        for result in response.get("results", [])
+        for result in organic_results[:max_results]
     ]
 
 
