@@ -5,6 +5,7 @@ Evidence is not re-fetched mid-debate in v1 (cost/latency control); personas
 work from this snapshot plus any user-uploaded documents.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -19,14 +20,15 @@ QUERY_SYSTEM_PROMPT = """Generate 2 to 4 targeted web search queries that would 
 useful, current evidence for the decision below. Queries should be specific to the \
 decision's details, not generic advice searches."""
 
-# path to the evidence-server script, launched as a stdio subprocess per debate
-_EVIDENCE_SERVER_PATH = Path(__file__).resolve().parents[2] / "mcp_servers" / "evidence_server" / "server.py"
+# backend project root, needed so the subprocess can resolve `app.*` imports
+# when launched as a module rather than a bare script path
+_BACKEND_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _build_query_llm() -> ChatAnthropic:
+    # no explicit temperature: this model rejects the parameter outright
     return ChatAnthropic(
         model=settings.structured_model,
-        temperature=0,
         api_key=settings.anthropic_api_key,
     ).with_structured_output(EvidenceQueries)
 
@@ -52,7 +54,8 @@ async def gather_evidence_node(state: DecisionState) -> dict:
             "evidence": {
                 "transport": "stdio",
                 "command": sys.executable,
-                "args": [str(_EVIDENCE_SERVER_PATH)],
+                "args": ["-m", "app.mcp_servers.evidence_server.server"],
+                "cwd": str(_BACKEND_ROOT),
             }
         }
     )
@@ -61,8 +64,11 @@ async def gather_evidence_node(state: DecisionState) -> dict:
 
     evidence: list[dict] = []
     for query in query_plan.queries[:4]:
-        results = await search_web.ainvoke({"query": query, "max_results": 3})
-        for result in results:
+        # each list item is an MCP text content block whose "text" field is
+        # a JSON-serialized {title, snippet, url} dict, not the dict itself
+        content_blocks = await search_web.ainvoke({"query": query, "max_results": 3})
+        for block in content_blocks:
+            result = json.loads(block["text"])
             evidence.append(
                 {
                     "source": result.get("title", ""),

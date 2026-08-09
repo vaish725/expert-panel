@@ -18,10 +18,10 @@ implied by the text."""
 
 
 def _build_intake_llm() -> ChatAnthropic:
-    """Low temperature: consistency matters more than voice at this stage."""
+    """No explicit temperature: this model rejects the parameter outright and
+    uses its own fixed default, which is low enough for structured extraction."""
     return ChatAnthropic(
         model=settings.structured_model,
-        temperature=0,
         api_key=settings.anthropic_api_key,
     ).with_structured_output(IntakeExtraction)
 

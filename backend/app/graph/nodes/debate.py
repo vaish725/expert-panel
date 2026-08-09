@@ -13,13 +13,21 @@ from app.graph.state import DecisionState, Turn
 
 
 def _build_persona_llm() -> ChatAnthropic:
-    """Higher temperature: distinct persona voices matter more than
-    determinism here, unlike the structured-output nodes."""
+    # no explicit temperature: this model rejects the parameter outright
+    # and uses its own fixed default for all calls
     return ChatAnthropic(
         model=settings.persona_model,
-        temperature=0.7,
         api_key=settings.anthropic_api_key,
     )
+
+
+def _extract_text(content) -> str:
+    """This model reasons by default, so response.content is a list of
+    blocks (thinking + text) rather than a plain string; keep only the text."""
+    if isinstance(content, str):
+        return content
+    text_blocks = [block["text"] for block in content if isinstance(block, dict) and block.get("type") == "text"]
+    return "\n".join(text_blocks).strip()
 
 
 async def single_persona_round_node(state: DecisionState, persona_name: str = "skeptic") -> dict:
@@ -38,6 +46,6 @@ async def single_persona_round_node(state: DecisionState, persona_name: str = "s
     turn: Turn = {
         "round": state["round_number"],
         "persona": persona["name"],
-        "content": response.content,
+        "content": _extract_text(response.content),
     }
     return {"transcript": state["transcript"] + [turn]}
