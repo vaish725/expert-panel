@@ -6,6 +6,7 @@ output (not string similarity) so paraphrases are recognized correctly.
 """
 
 from langchain_anthropic import ChatAnthropic
+from langgraph.config import get_stream_writer
 
 from app.config import settings
 from app.graph.ledger import render_ledger
@@ -52,6 +53,7 @@ async def extract_claims_node(state: DecisionState) -> dict:
         ]
     )
 
+    writer = get_stream_writer()
     ledger = list(state["claims_ledger"])
     ledger_by_id = {c["id"]: c for c in ledger}
     next_id_num = len(ledger) + 1
@@ -75,6 +77,7 @@ async def extract_claims_node(state: DecisionState) -> dict:
             ledger_by_id[claim["id"]] = claim
             next_id_num += 1
             new_claims_count += 1
+            writer({"type": "claim_added", "claim": dict(claim)})
         elif item.action == "restatement" and item.target_claim_id in ledger_by_id:
             ledger_by_id[item.target_claim_id]["reinforced_count"] += 1
         elif item.action == "resolution" and item.target_claim_id in ledger_by_id:
@@ -84,6 +87,14 @@ async def extract_claims_node(state: DecisionState) -> dict:
                 target["resolved_round"] = state["round_number"]
                 target["resolved_by"] = item.raised_by
                 resolved_count += 1
+                writer(
+                    {
+                        "type": "claim_resolved",
+                        "claim_id": target["id"],
+                        "resolved_by": item.raised_by,
+                        "round": state["round_number"],
+                    }
+                )
 
     return {
         "claims_ledger": ledger,

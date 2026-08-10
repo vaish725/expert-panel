@@ -5,6 +5,7 @@ transcript) so the recommendation is traceable back to specific claim ids.
 """
 
 from langchain_anthropic import ChatAnthropic
+from langgraph.config import get_stream_writer
 
 from app.config import settings
 from app.graph.ledger import render_ledger
@@ -55,4 +56,8 @@ async def synthesize_node(state: DecisionState) -> dict:
         "unresolved_disagreements": unresolved_disagreements,
         "confidence_note": output.confidence_note,
     }
+
+    writer = get_stream_writer()
+    writer({"type": "recommendation_ready", "recommendation": dict(recommendation)})
+
     return {"final_recommendation": recommendation}

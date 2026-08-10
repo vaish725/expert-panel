@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.config import get_stream_writer
 
 from app.graph.state import DecisionState
 
@@ -39,5 +40,8 @@ async def export_node(state: DecisionState) -> dict:
     # {path, format} result, not the dict itself
     content_blocks = await generate_report.ainvoke({"decision": dict(state)})
     result = json.loads(content_blocks[0]["text"])
+
+    writer = get_stream_writer()
+    writer({"type": "exported", "path": result["path"]})
 
     return {"exported_report_path": result["path"]}

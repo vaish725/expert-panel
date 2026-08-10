@@ -6,6 +6,8 @@ to write) and exposes a routing function for the conditional edge, which
 reads state but never mutates it.
 """
 
+from langgraph.config import get_stream_writer
+
 from app.graph.convergence import check_convergence
 from app.graph.personas.prompts import PERSONAS
 from app.graph.state import DecisionState
@@ -23,6 +25,20 @@ def check_convergence_node(state: DecisionState) -> dict:
         min_rounds=state["min_rounds"],
         max_rounds=state["max_rounds"],
     )
+
+    writer = get_stream_writer()
+    writer(
+        {
+            "type": "round_complete",
+            "round": state["round_number"],
+            "new_claims": state["new_claims_this_round"],
+            "resolved": state["resolved_this_round"],
+            "converged": result.converged,
+        }
+    )
+    if result.converged:
+        writer({"type": "converged", "round": state["round_number"], "forced": result.forced})
+
     update = {"converged": result.converged, "forced": result.forced}
     if not result.converged:
         update["round_number"] = state["round_number"] + 1
