@@ -1,0 +1,82 @@
+:root {
+  --bg: #0f1115;
+  --bg-panel: #171a21;
+  --bg-panel-raised: #1e222b;
+  --border: #2a2f3a;
+  --text: #e6e8ec;
+  --text-dim: #8b93a3;
+  --accent: #5b8cff;
+  --accent-dim: #2c3d63;
+  --good: #4caf7d;
+  --warn: #d9a441;
+  --bad: #d9636b;
+
+  --persona-skeptic: #d9636b;
+  --persona-optimist: #4caf7d;
+  --persona-contrarian: #b487e0;
+  --persona-pragmatist: #4aa8d8;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+textarea,
+input {
+  font-family: inherit;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  gap: 0;
+}
+
+.app-shell__body {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-shell__error {
+  background: var(--bad);
+  color: #1a0d0f;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+}
+
+.app-shell__new-debate {
+  align-self: flex-start;
+  margin-top: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}

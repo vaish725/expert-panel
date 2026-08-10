@@ -1,0 +1,128 @@
+.review-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 12px;
+}
+
+.review-panel h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.review-panel__recommended {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.review-panel__confidence {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.review-panel__tradeoff {
+  margin-top: 12px;
+}
+
+.review-panel__tradeoff h3 {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+}
+
+.review-panel__tradeoff ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  font-family: ui-monospace, monospace;
+  color: var(--text-dim);
+}
+
+.review-panel__unresolved {
+  margin-top: 12px;
+  padding: 8px 10px;
+  background: var(--bg-panel-raised);
+  border-left: 3px solid var(--warn);
+  border-radius: 4px;
+  font-size: 0.82rem;
+}
+
+.review-panel__unresolved h3 {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: var(--warn);
+}
+
+.review-panel__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.review-panel__actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #0b0d11;
+  font-weight: 600;
+}
+
+.review-panel__secondary {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  font-weight: 400 !important;
+}
+
+.review-panel__reopen {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.review-panel__reopen input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-raised);
+  color: var(--text);
+}
+
+.review-panel__edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-panel__edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.review-panel__edit select,
+.review-panel__edit textarea {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-raised);
+  color: var(--text);
+  resize: vertical;
+}
+
+.review-panel--done {
+  border-color: var(--good);
+}
+
+.review-panel__path {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
