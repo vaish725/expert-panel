@@ -25,12 +25,17 @@ decision's details, not generic advice searches."""
 _BACKEND_ROOT = Path(__file__).resolve().parents[3]
 
 
-def _build_query_llm() -> ChatAnthropic:
-    # no explicit temperature: this model rejects the parameter outright
-    return ChatAnthropic(
-        model=settings.structured_model,
-        api_key=settings.anthropic_api_key,
-    ).with_structured_output(EvidenceQueries)
+def _build_query_llm():
+    # no explicit temperature: this model rejects the parameter outright.
+    # with_retry guards against occasional malformed structured-output calls.
+    return (
+        ChatAnthropic(
+            model=settings.structured_model,
+            api_key=settings.anthropic_api_key,
+        )
+        .with_structured_output(EvidenceQueries)
+        .with_retry(stop_after_attempt=3)
+    )
 
 
 async def gather_evidence_node(state: DecisionState) -> dict:

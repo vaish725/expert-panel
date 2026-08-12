@@ -23,13 +23,19 @@ Recognize paraphrases as restatements/resolutions rather than filing them as new
 For "restatement" and "resolution", you must set target_claim_id to an existing ledger id."""
 
 
-def _build_extraction_llm() -> ChatAnthropic:
+def _build_extraction_llm():
     # no explicit temperature: this model rejects the parameter outright;
-    # low-variance classification is the point of structured output anyway
-    return ChatAnthropic(
-        model=settings.structured_model,
-        api_key=settings.anthropic_api_key,
-    ).with_structured_output(RoundExtraction)
+    # low-variance classification is the point of structured output anyway.
+    # with_retry guards against occasional malformed tool-call output on
+    # this schema (see synthesis.py for the failure mode this catches).
+    return (
+        ChatAnthropic(
+            model=settings.structured_model,
+            api_key=settings.anthropic_api_key,
+        )
+        .with_structured_output(RoundExtraction)
+        .with_retry(stop_after_attempt=3)
+    )
 
 
 def _render_round_turns(transcript: list, round_number: int) -> str:

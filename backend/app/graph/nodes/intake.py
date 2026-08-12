@@ -17,13 +17,18 @@ the user implied but did not say outright. Do not invent stakes that aren't reas
 implied by the text."""
 
 
-def _build_intake_llm() -> ChatAnthropic:
+def _build_intake_llm():
     """No explicit temperature: this model rejects the parameter outright and
-    uses its own fixed default, which is low enough for structured extraction."""
-    return ChatAnthropic(
-        model=settings.structured_model,
-        api_key=settings.anthropic_api_key,
-    ).with_structured_output(IntakeExtraction)
+    uses its own fixed default, which is low enough for structured extraction.
+    with_retry guards against occasional malformed structured-output calls."""
+    return (
+        ChatAnthropic(
+            model=settings.structured_model,
+            api_key=settings.anthropic_api_key,
+        )
+        .with_structured_output(IntakeExtraction)
+        .with_retry(stop_after_attempt=3)
+    )
 
 
 async def intake_node(state: DecisionState) -> dict:

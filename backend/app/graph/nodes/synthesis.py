@@ -20,12 +20,20 @@ recommended_option to null and explain why in confidence_note. Every tradeoff en
 cite a real claim id from the ledger, never an invented one."""
 
 
-def _build_synthesis_llm() -> ChatAnthropic:
-    # no explicit temperature: this model rejects the parameter outright
-    return ChatAnthropic(
-        model=settings.structured_model,
-        api_key=settings.anthropic_api_key,
-    ).with_structured_output(SynthesisOutput)
+def _build_synthesis_llm():
+    # no explicit temperature: this model rejects the parameter outright.
+    # with_retry: structured output on this large, complex schema
+    # occasionally comes back malformed (a model-side tool-calling quirk,
+    # not a schema bug); retrying re-samples a fresh response rather than
+    # trying to parse around a bad one.
+    return (
+        ChatAnthropic(
+            model=settings.structured_model,
+            api_key=settings.anthropic_api_key,
+        )
+        .with_structured_output(SynthesisOutput)
+        .with_retry(stop_after_attempt=3)
+    )
 
 
 async def synthesize_node(state: DecisionState) -> dict:
