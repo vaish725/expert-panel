@@ -1,0 +1,240 @@
+# Decision Report: Should our 3-person team adopt Prettier for automatic code formatting, or continue formatting code manually?
+
+**Options considered:** Adopt Prettier, Keep formatting manually
+
+## Recommendation
+
+**Recommended option:** Adopt Prettier
+
+**Confidence note:** The ledger is large but the load-bearing, resolved facts point narrowly toward adopting Prettier via an incremental path rather than a big-bang reformat. Key resolved claims: c2/c16/c17 establish that a mass reformat genuinely pollutes git blame and risks merge conflicts, but c33/c34/c31 (resolved) show these are avoidable via the changed-lines/incremental approach plus blame-ignore, and that Prettier's downside is capped and reversible at the config level, unlike manual formatting's compounding drift (c12, unrebutted). c29 and c42 (resolved) expose internal inconsistencies in the 'keep manual' case: it simultaneously assumes the team can't reliably do a one-line git config step (c25) while assuming the same team can sustain an unenforced verbal style agreement indefinitely (c6), and c11's reversibility claim survives c2's blame concern once reversibility is understood at the config level (c33). c44/c45 (resolved) are real but narrow costs of the blame-ignore mitigation, not full rebuttals, and c57/c58 (contested but well-supported) note every Prettier failure mode raised has a bounded, mostly one-time mitigation (summed in c54 at under an hour), whereas manual formatting's core cost (c9, c12) has no offered mitigation because none exists. Genuine unresolved tension remains around c46/c66 (mitigation stack accretion / bespoke process risk for a no-tooling team) versus c54/c55 (those mitigations are cheap and not Prettier-specific), and around c60's legitimate point that the ESLint blame-ignore evidence (c47) is scale-mismatched, but c56 correctly notes blame-ignore is a native Git feature, not ESLint-specific, blunting that objection. On balance, the resolved claims and the strongest contested claims (c53, c57, c58) favor careful, incremental Prettier adoption over indefinite manual formatting, though the team should treat CI/pre-commit enforcement (c35, c55) as a near-term follow-up, not an optional afterthought.
+
+## Tradeoffs
+
+### Adopt Prettier
+- (pro) c1
+- (con) c2
+- (con) c3
+- (con) c4
+- (con) c5
+- (con) c6
+- (con) c7
+- (pro) c8
+- (pro) c9
+- (pro) c10
+- (pro) c11
+- (pro) c12
+- (con) c16
+- (con) c17
+- (con) c18
+- (pro) c19
+- (pro) c22
+- (pro) c23
+- (con) c24
+- (con) c25
+- (con) c26
+- (con) c27
+- (pro) c28
+- (pro) c29
+- (pro) c30
+- (pro) c31
+- (con) c32
+- (pro) c33
+- (pro) c34
+- (pro) c35
+- (con) c44
+- (con) c45
+- (con) c46
+- (con) c47
+- (pro) c49
+- (pro) c50
+- (pro) c51
+- (pro) c52
+- (pro) c53
+- (pro) c54
+- (pro) c55
+- (pro) c56
+- (pro) c57
+- (pro) c58
+- (con) c59
+- (con) c60
+- (con) c63
+- (con) c64
+- (con) c65
+- (con) c66
+
+### Keep formatting manually
+- (con) c1
+- (pro) c2
+- (pro) c3
+- (pro) c4
+- (pro) c5
+- (pro) c6
+- (pro) c7
+- (con) c8
+- (con) c9
+- (con) c10
+- (con) c11
+- (con) c12
+- (pro) c16
+- (pro) c17
+- (pro) c18
+- (con) c19
+- (con) c22
+- (con) c23
+- (pro) c24
+- (pro) c25
+- (pro) c26
+- (pro) c27
+- (con) c28
+- (con) c29
+- (con) c30
+- (con) c31
+- (pro) c32
+- (con) c33
+- (con) c34
+- (con) c35
+- (pro) c44
+- (pro) c45
+- (pro) c46
+- (pro) c47
+- (con) c49
+- (con) c50
+- (con) c51
+- (con) c52
+- (con) c53
+- (con) c54
+- (con) c55
+- (con) c56
+- (con) c57
+- (con) c58
+- (pro) c59
+- (pro) c60
+- (pro) c63
+- (pro) c64
+- (pro) c65
+- (pro) c66
+
+## Unresolved disagreements
+
+- c1
+- c3
+- c4
+- c5
+- c6
+- c7
+- c8
+- c9
+- c10
+- c11
+- c12
+- c13
+- c14
+- c15
+- c19
+- c20
+- c21
+- c22
+- c23
+- c24
+- c25
+- c26
+- c28
+- c30
+- c32
+- c36
+- c37
+- c38
+- c39
+- c40
+- c41
+- c43
+- c46
+- c47
+- c48
+- c49
+- c50
+- c51
+- c52
+- c53
+- c54
+- c55
+- c56
+- c57
+- c58
+- c59
+- c60
+- c61
+- c62
+- c63
+- c64
+- c65
+- c66
+
+## Claims ledger (audit trail)
+
+- **c1** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 1): Adopt Prettier because it ends formatting inconsistency and prevents future style wars.
+- **c2** [Keep formatting manually, resolved (round 1), reinforced x4] (raised by contrarian, round 1): Adopting Prettier on an existing codebase pollutes git blame history, which is especially costly for a 3-person team that relies on git history as institutional memory rather than extensive docs.
+- **c3** [Keep formatting manually, contested, reinforced x1] (raised by contrarian, round 1): 'Opinionated' formatting means outsourcing style decisions to Prettier's defaults, foreclosing cheap, low-stakes alignment that a small team could reach on its own via conversation.
+- **c4** [Keep formatting manually, contested, reinforced x3] (raised by contrarian, round 1): Community advice (Stack Exchange) recommends against a big-bang reformat, favoring letting PR authors optionally reformat only changed lines; the 'just adopt Prettier' framing skips this nuance.
+- **c5** [Keep formatting manually, contested, reinforced x2] (raised by contrarian, round 1): Minimizing cost of mistakes matters most when stakes are unclear (per 'Start Small' pattern), which fits this team's situation of no strong opinions, no CI, no tooling.
+- **c6** [Keep formatting manually, contested, reinforced x2] (raised by contrarian, round 1): For a 3-person team, coordination cost of agreeing on a manual style guide is trivial and can be done in one conversation.
+- **c7** [Keep formatting manually, contested, reinforced x1] (raised by contrarian, round 1): Manual formatting preserves optionality: the team can adopt Prettier later with real evidence of pain, rather than paying the cost speculatively now.
+- **c8** [Adopt Prettier, contested, reinforced x3] (raised by optimist, round 1): The one-time cost of adopting Prettier on the existing codebase is likely just hours (one command plus one PR review), given the codebase is small enough for 3 people to maintain.
+- **c9** [Adopt Prettier, contested, reinforced x2] (raised by optimist, round 1): The ongoing cost of NOT adopting Prettier is recurring formatting-nit time during PR reviews that compounds over time, unlike Prettier's front-loaded, depreciating cost.
+- **c10** [Adopt Prettier, contested, reinforced x1] (raised by optimist, round 1): Now, while the team has no strong opinions yet, is the cheapest possible moment to adopt a formatting standard; waiting until habits calcify raises the cost of switching later.
+- **c11** [Adopt Prettier, contested, reinforced x2] (raised by optimist, round 1): Adopting Prettier is close to a reversible decision (revert or reconfigure with minimal sunk cost), whereas not deciding creates an implicit, harder-to-walk-back default distributed across contributors' habits.
+- **c12** [Adopt Prettier, contested, reinforced x1] (raised by optimist, round 1): Keeping manual formatting is not neutral - it lets existing inconsistency compound and adds more manually-formatted code that will eventually need reformatting at higher cost later.
+- **c13** [neutral, contested, reinforced x1] (raised by pragmatist, round 1): Prettier is consistently described across multiple independent sources as an opinionated formatter enforcing a single style with minimal configuration.
+- **c14** [neutral, contested, reinforced x1] (raised by pragmatist, round 1): General software engineering guidance (HN discussion) suggests that when existing conventions are undocumented/inconsistent, the recommended move is to improve them before or while adding new work, though this isn't Prettier- or team-size-specific.
+- **c15** [neutral, contested, reinforced x0] (raised by pragmatist, round 1): No retrieved evidence speaks directly to team size (3 people) or quantifies time saved/cost of the initial reformatting pass, so claims about negligible overhead or precise ROI for a small team are ungrounded extrapolations.
+- **c16** [Keep formatting manually, resolved (round 2), reinforced x1] (raised by skeptic, round 1): A single mass-reformat PR touching nearly every file would make git blame useless overnight, burying real authorship/history the team relies on for debugging.
+- **c17** [Keep formatting manually, resolved (round 2), reinforced x1] (raised by skeptic, round 1): A mass-reformat PR could collide with any in-flight branches, causing painful whitespace-driven merge conflicts unrelated to real logic changes.
+- **c18** [Keep formatting manually, resolved (round 2), reinforced x1] (raised by skeptic, round 1): After investing time in Prettier config debates and a big reformat commit, the team may fall into a sunk-cost trap where resulting problems are quietly absorbed rather than the tool being reconsidered.
+- **c19** [Adopt Prettier, contested, reinforced x1] (raised by skeptic, round 1): Keeping manual formatting isn't free either - it defers inevitable style disagreements to a later point when preferences have hardened and are more expensive to resolve.
+- **c20** [neutral, contested, reinforced x1] (raised by skeptic, round 1): Before adopting either option safely, the team should determine whether anyone currently has open branches that a mass reformat would disrupt.
+- **c21** [neutral, contested, reinforced x1] (raised by contrarian, round 2): c18's sunk-cost trap claim has no evidentiary backing and should be scrutinized as speculation the same way c8/c9 were flagged as ungrounded.
+- **c22** [Adopt Prettier, contested, reinforced x1] (raised by contrarian, round 2): c6's claim that coordination cost is trivial for 3 people cuts both ways: if agreeing on a manual style guide is cheap, agreeing to adopt Prettier's defaults in the same conversation is equally cheap but yields a durable, enforced outcome instead of a fragile unenforced verbal agreement.
+- **c23** [Adopt Prettier, contested, reinforced x0] (raised by pragmatist, round 2): The evidence-supported path if adopting Prettier is the incremental/changed-lines approach combined with a git-blame-ignore-revs file, which sidesteps c16/c17 without needing to resolve the ungrounded ROI debate.
+- **c24** [Keep formatting manually, contested, reinforced x1] (raised by skeptic, round 2): Prettier adoption is not cleanly reversible: turning it off means either living with Prettier-formatted code with no enforcement going forward, or running a second mass-reformat incurring git-blame and merge-conflict risk again; 'reversible' only describes the config, not the resulting code state.
+- **c25** [Keep formatting manually, contested, reinforced x0] (raised by skeptic, round 2): The git-blame-ignore-revs mitigation is unreliable for a team with no process infrastructure: it requires awareness, timely setup, and per-contributor git client configuration (local CLI blame doesn't respect it automatically), so it's likely to be skipped or inconsistently applied by a 3-person team with no tooling/CI.
+- **c26** [Keep formatting manually, contested, reinforced x1] (raised by skeptic, round 2): Without CI or pre-commit enforcement, Prettier adoption can decay within months as individual editor configs drift or aren't installed, leading to a codebase that's inconsistent again but now also carries polluted git history and false confidence from an unused config file - strictly worse than never adopting it.
+- **c27** [Keep formatting manually, resolved (round 3), reinforced x0] (raised by skeptic, round 2): Even in the successful case, changed-lines-only formatting per c4 means old untouched files remain permanently inconsistent, creating a two-tier codebase; c1's claim of 'ending formatting inconsistency' is weaker than advertised.
+- **c28** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 3): c24's reversal-cost argument rests on an unproven premise (that reversal is likely wanted) and should be scrutinized as speculation under the same standard applied to c18/c21.
+- **c29** [Adopt Prettier, resolved (round 4), reinforced x0] (raised by contrarian, round 3): c25 is self-defeating: it assumes the team can't reliably execute a one-line git config step, while c6 assumes the same team can reliably sustain an unenforced manual style agreement indefinitely - these two assumptions about team competence are inconsistent.
+- **c30** [Adopt Prettier, contested, reinforced x1] (raised by contrarian, round 3): c26's decay scenario just describes Prettier regressing toward the baseline of manual formatting (zero enforcement), so at worst Prettier's floor equals manual's ceiling, not an argument for manual over Prettier.
+- **c31** [Adopt Prettier, resolved (round 4), reinforced x1] (raised by contrarian, round 3): c27's two-tier codebase (some consistent, some not) strictly dominates manual formatting's zero-tier codebase (nothing ever consistent), so c27 actually favors adopting Prettier rather than undermining it.
+- **c32** [Keep formatting manually, contested, reinforced x0] (raised by contrarian, round 3): The 'resolved' status of c16/c17/c18 should not be sticky, since c21 already showed c18 lacks evidentiary support and that challenge was never actually answered.
+- **c33** [Adopt Prettier, resolved (round 4), reinforced x1] (raised by optimist, round 3): Reversibility doesn't require restoring the pre-Prettier state; if Prettier is judged a mistake, the team simply stops enforcing it going forward, losing nothing already gained - a cheap config-level reversal, unlike manual formatting's compounding inconsistency which has no undo.
+- **c34** [Adopt Prettier, resolved (round 4), reinforced x0] (raised by optimist, round 3): Even granting imperfect local blame-ignore configuration by some team members, the cost is a minor inconvenience (looking one commit further back), not a real blocker, especially for a small team that can just ask each other.
+- **c35** [Adopt Prettier, resolved (round 4), reinforced x0] (raised by optimist, round 3): c26's silent multi-month enforcement decay scenario requires all three people to repeatedly notice and ignore unformatted diffs in PR review, which is unlikely for a team this small; the fix (pre-commit hook via husky+lint-staged or a prettier --check step) is itself a bounded, cheap (under 30 minutes) one-time addition to the cost estimate.
+- **c36** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): c22 is ungrounded: no source addresses whether coordination cost differs between agreeing on manual style vs. agreeing to adopt Prettier; it's an unsupported inference mirroring c6's own unsupported premise.
+- **c37** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): c23 accurately synthesizes grounded evidence (incremental changed-lines rollout + blame-ignore file) as available techniques, but doesn't establish that this combination is sufficient or reliably executed by this specific team.
+- **c38** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): c24 is partially grounded: the code-state-vs-config distinction is a reasonable inference from c2's documented blame pollution fact, but the claim that removing enforcement reintroduces drift immediately is an ungrounded behavioral prediction.
+- **c39** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): c25's technical specifics (per-client git config requirement, local CLI vs GitHub UI blame-ignore behavior) are not found in any retrieved source; its general point is a plausible but evidence-unsupported inference.
+- **c40** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): c26 is ungrounded: no retrieved source discusses enforcement decay, editor plugin drift, or the compounding scenario described; it is a constructed hypothetical akin to c17/c18.
+- **c41** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): c27 is well-grounded as a direct logical consequence of c4: if only changed lines are reformatted, untouched files necessarily remain inconsistent, correctly narrowing c1's overclaim.
+- **c42** [neutral, resolved (round 4), reinforced x0] (raised by pragmatist, round 3): c11 is not merely ungrounded but actually contradicted by c2, which directly undercuts the reversibility claim.
+- **c43** [neutral, contested, reinforced x0] (raised by pragmatist, round 3): Both sides have now built sub-arguments (c18's sunk-cost trap, c26's enforcement-free decay, and optimist's earlier ROI numbers) on uncited hypotheticals that should not be weighted as evidence in a final recommendation.
+- **c44** [Keep formatting manually, resolved (round 4), reinforced x0] (raised by skeptic, round 3): The 'just ask each other' fallback for git blame assumes constant availability and memory of all three team members; small teams have higher single-point-of-failure risk than large ones since there's no redundant institutional memory (e.g., wiki, second reviewer) if someone leaves or is unavailable.
+- **c45** [Keep formatting manually, resolved (round 4), reinforced x0] (raised by skeptic, round 3): Costing minutes to add a .git-blame-ignore-revs file describes only the setup action, not the reliability of the mitigation actually working for all team members long-term; a file that exists but isn't locally configured by everyone creates false confidence that the blame problem is solved, removing pressure to address it.
+- **c46** [Keep formatting manually, contested, reinforced x1] (raised by skeptic, round 3): Properly executing Prettier adoption requires a four-part mitigation stack (Prettier config, changed-lines-only discipline, blame-ignore file setup by all members, and CI/pre-commit enforcement) with more coordination points than the original problem, for a team explicitly described as having no existing tooling or CI; each mitigation is individually cheap but the stack's moving parts decay without dedicated maintenance.
+- **c47** [Keep formatting manually, contested, reinforced x0] (raised by skeptic, round 3): The blame-ignore mitigation's evidentiary basis (ESLint's repo) comes from a large, tooled-up project with CI and maintainers, making it a poor comparison for a no-tooling 3-person team - the same category error the contrarian accused skeptic of making, but running in favor of adopting Prettier.
+- **c48** [neutral, contested, reinforced x0] (raised by contrarian, round 4): The raw claim-count imbalance between 'keep manual' (~18) and 'adopt Prettier' (~16) reflects volume/rhetorical weight rather than earned argumentative strength, especially given recent repetition of the git-blame concern.
+- **c49** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 4): Manual formatting also requires multiple ongoing coordination points (perfect indefinite memory, catching drift every review, surviving turnover/tiredness) with zero enforcement or artifact, comparable in number to c46's four Prettier mitigation steps, but manual's failure points are unnamed and arguably less robust.
+- **c50** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 4): If cross-context evidence borrowing (ESLint's tooled-up context, per c47) disqualifies a mitigation, then the same rule disqualifies 'keep manual' sources like c5 (agile Start Small framework) and c14 (large production codebase HN thread), which were already flagged as inference beyond source scope; the rule can't apply only to the 'adopt Prettier' side.
+- **c51** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 4): c44's claim that small teams have high single-point-of-failure risk directly contradicts the premise underlying c6 (that the same team can reliably sustain an unenforced verbal agreement indefinitely), reintroducing the same inconsistency pattern already flagged in c29 under a new claim number.
+- **c52** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 4): c45's 'false confidence from unconfigured mitigation file' claim is a speculative psychological claim with no more grounding than c18/c26, yet ungrounded 'keep manual' claims retain rhetorical weight on the ledger while equivalent 'adopt Prettier' claims (c8, c9, c11) get actively used against that side despite similar ungrounded status.
+- **c53** [Adopt Prettier, contested, reinforced x0] (raised by contrarian, round 4): Stripping out claims marked ungrounded on both sides, the evidence-supported case for adopting Prettier still stands: Prettier is opinionated (c13), blame pollution has a documented mitigation (c2/c23), incremental rollout avoids the big-bang failure mode (c4), and c27/c41 correctly narrow c1 to partial rather than total consistency improvement - supporting careful adoption rather than manual formatting.
+- **c54** [Adopt Prettier, contested, reinforced x0] (raised by optimist, round 4): Sizing c46's four parts individually: config file setup (~5 min), changed-lines discipline (free, default editor behavior requiring no memory), blame-ignore file (~2 min, trivial failure mode per c34), and CI/pre-commit hook (~30 min per c35) sum to under an hour of one-time setup, not an ongoing-maintenance stack.
+- **c55** [Adopt Prettier, contested, reinforced x0] (raised by optimist, round 4): The CI/pre-commit enforcement piece is not a Prettier-specific tax since any enforceable team standard, manual or automated, would eventually need equivalent infrastructure.
+- **c56** [Adopt Prettier, contested, reinforced x0] (raised by optimist, round 4): The git-blame-ignore-revs mechanism is a native Git 2.23+ feature, not an ESLint-specific tool, so ESLint's scale affects only how urgently the mitigation is needed, not whether a small team can execute it; a 3-person team may find it easier to deploy correctly than ESLint's large contributor base.
+- **c57** [Adopt Prettier, contested, reinforced x0] (raised by optimist, round 4): Across four rounds every Prettier failure mode raised (c16, c17, c18, c24, c25, c26, c46) has been met with a concrete, bounded, mostly one-time mitigation, while manual formatting's core costs (c9, c12) have no mitigation offered because none exists - manual formatting decays indefinitely by construction.
+- **c58** [Adopt Prettier, contested, reinforced x0] (raised by optimist, round 4): Decision-making under bounded uncertainty favors the option with a capped, shrinking downside (Prettier's bounded one-time setup cost) over one with an uncapped, growing downside (manual formatting's compounding drift per c12).
+- **c59** [Keep formatting manually, contested, reinforced x0] (raised by pragmatist, round 4): c46 is a genuinely useful synthesis claim that aggregates already-identified mitigations into a complexity count rather than introducing new unsourced facts, and is worth keeping as a structural observation.
+- **c60** [Keep formatting manually, contested, reinforced x0] (raised by pragmatist, round 4): c47's critique is factually accurate about the source (ESLint's own issue tracker discussion, eslint/eslint#17814, doesn't claim general applicability to 3-person teams), making it a legitimate scope-of-evidence critique and the strongest new claim this round.
+- **c61** [neutral, contested, reinforced x0] (raised by pragmatist, round 4): The grounded, load-bearing facts remain unchanged since R2: Prettier is opinionated (c13); git blame pollution from mass reformatting is real but sourced from a large tooled project (per c47's correction); incremental/changed-lines rollout is a documented alternative (c4); and c27's narrowing of c1 is a valid inference from c4.
+- **c62** [neutral, contested, reinforced x0] (raised by pragmatist, round 4): Every ROI estimate, decay scenario, reversibility claim, and team-capacity claim from either side (c8, c9, c10, c11, c12, c18, c19, c24, c26, c30, c31, c33, c34, c35, c44, c45) remains unsourced inference; the evidence base is too thin to adjudicate the decision on citations alone, so the honest recommendation is to proceed on judgment, using the incremental rollout path if adopting, while treating enforcement/CI as an acknowledged open question.
+- **c63** [Keep formatting manually, contested, reinforced x0] (raised by skeptic, round 4): Format-on-save with the changed-lines-only discipline can cause 'drip-reformatting': a contributor opening an old untouched file for an unrelated fix triggers a full-file reformat on save, producing large unintended diffs and unplanned blame pollution one file at a time, since the 'only stage changed lines' convention (e.g. git add -p) is itself an unenforced manual honor-system requirement.
+- **c64** [Keep formatting manually, contested, reinforced x0] (raised by skeptic, round 4): c29's charge of inconsistent competence assumptions doesn't hold because the two failure modes differ in visibility: a manual formatting violation is caught immediately in review, whereas a missing local blame-ignore config is invisible until needed months later, so trusting the team differently in each case is calibrated to failure visibility, not inconsistent.
+- **c65** [Keep formatting manually, contested, reinforced x0] (raised by skeptic, round 4): c34's 'just ask each other' defense, if fully granted, would equally resolve the original formatting-inconsistency problem that motivates adopting Prettier in the first place, so it can't be selectively deployed only to defend against the blame concern while ignoring its symmetric implication against adopting Prettier.
+- **c66** [Keep formatting manually, contested, reinforced x0] (raised by skeptic, round 4): The trajectory across rounds shows 'adopt Prettier' surviving each objection only by accreting another tool or convention (blame-ignore, pre-commit hook, now git add -p discipline), which is itself evidence that the real proposal is an ever-growing bespoke process for a team with zero existing process infrastructure, unlike manual formatting's boring and bounded failure modes.
