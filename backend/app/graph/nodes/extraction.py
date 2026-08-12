@@ -43,6 +43,41 @@ def _render_round_turns(transcript: list, round_number: int) -> str:
     return "\n\n".join(f"{t['persona']}:\n{t['content']}" for t in turns)
 
 
+def normalize_stance(raw_stance: str, options: list[str]) -> str:
+    """Match the model's freeform stance text to one of the decision's exact
+    option strings, or "neutral" if none matches.
+
+    The model is only prompted to name "which option" a claim favors, not to
+    echo the option string verbatim, so it may return a different casing or
+    a shortened paraphrase (e.g. "adopt prettier" for "Adopt Prettier").
+    Downstream code (synthesis's tradeoffs table) matches stance against
+    state["options"] by exact string, so this normalization is required for
+    a claim to ever show up under its option there.
+    """
+    normalized = raw_stance.strip().lower()
+    if normalized == "neutral":
+        return "neutral"
+    for option in options:
+        if normalized == option.lower():
+            return option
+    for option in options:
+        if normalized in option.lower() or option.lower() in normalized:
+            return option
+
+    # word-overlap fallback: a shortened paraphrase ("keep manual" for "Keep
+    # formatting manually") may share no full substring with the option, but
+    # shares most of its significant words
+    stop_words = {"the", "a", "an", "to", "of", "for", "and", "or"}
+    raw_words = {w for w in normalized.split() if w not in stop_words}
+    best_option, best_overlap = None, 0
+    for option in options:
+        option_words = {w for w in option.lower().split() if w not in stop_words}
+        overlap = sum(1 for rw in raw_words if any(rw in ow or ow in rw for ow in option_words))
+        if overlap > best_overlap:
+            best_option, best_overlap = option, overlap
+    return best_option or "neutral"
+
+
 async def extract_claims_node(state: DecisionState) -> dict:
     """Process this round's persona turns against the ledger and return the
     updated ledger plus this round's new/resolved counts (used by convergence)."""
@@ -73,7 +108,7 @@ async def extract_claims_node(state: DecisionState) -> dict:
                 "text": item.text,
                 "raised_by": item.raised_by,
                 "round_introduced": state["round_number"],
-                "stance": item.stance,
+                "stance": normalize_stance(item.stance, state["options"]),
                 "contested": True,
                 "reinforced_count": 0,
                 "resolved_round": None,

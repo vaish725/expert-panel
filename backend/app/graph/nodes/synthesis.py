@@ -16,16 +16,15 @@ SYNTHESIS_SYSTEM_PROMPT = """You synthesize a structured decision debate into a 
 recommendation. You will see the full claims ledger: every argument raised, whether it is \
 still contested or was resolved. Base recommended_option on the weight of resolved and \
 well-supported claims. If the ledger is genuinely balanced between options, set \
-recommended_option to null and explain why in confidence_note. Every tradeoff entry must \
-cite a real claim id from the ledger, never an invented one."""
+recommended_option to null and explain why in confidence_note. Reference specific claim ids \
+in confidence_note to justify the call."""
 
 
 def _build_synthesis_llm():
     # no explicit temperature: this model rejects the parameter outright.
-    # with_retry: structured output on this large, complex schema
-    # occasionally comes back malformed (a model-side tool-calling quirk,
-    # not a schema bug); retrying re-samples a fresh response rather than
-    # trying to parse around a bad one.
+    # with_retry as a general safety net; the schema itself is now small
+    # enough (2 plain fields) that malformed structured output shouldn't
+    # recur the way it did with the larger tradeoffs schema (see schemas.py).
     return (
         ChatAnthropic(
             model=settings.structured_model,
@@ -52,14 +51,19 @@ async def synthesize_node(state: DecisionState) -> dict:
         ]
     )
 
-    # derived directly from the ledger, not left to the model to recall
+    # both derived directly from the ledger, not left to the model to
+    # recall or reproduce: a claim's stance already says which option it
+    # favors (a "pro" for that option, a "con" for every other one), and
+    # unresolved disagreements are simply the still-contested claims
     unresolved_disagreements = [c["id"] for c in state["claims_ledger"] if c["contested"]]
 
-    # group the model's flat tradeoff list back into the per-option shape
-    # the rest of the app (state schema, report, frontend) expects
     tradeoffs_by_option: dict[str, list[dict]] = {option: [] for option in state["options"]}
-    for item in output.tradeoffs:
-        tradeoffs_by_option.setdefault(item.option, []).append({"claim_id": item.claim_id, "direction": item.direction})
+    for claim in state["claims_ledger"]:
+        if claim["stance"] not in tradeoffs_by_option:
+            continue  # neutral or unmatched-stance claims don't map to a specific option
+        for option in state["options"]:
+            direction = "pro" if option == claim["stance"] else "con"
+            tradeoffs_by_option[option].append({"claim_id": claim["id"], "direction": direction})
 
     recommendation: StructuredRecommendation = {
         "recommended_option": output.recommended_option,

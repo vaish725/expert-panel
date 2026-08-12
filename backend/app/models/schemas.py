@@ -64,37 +64,29 @@ class RoundExtraction(BaseModel):
     classifications: list[ClaimClassification]
 
 
-class TradeoffItem(BaseModel):
-    """One pro/con line in the synthesis tradeoff table, citing its source claim.
-
-    Flat list with an explicit `option` field rather than a dict keyed by
-    option name: a dynamic dict[str, list[...]] schema is unreliable for
-    tool-calling structured output (models occasionally nest the whole
-    payload under a spurious "parameters" wrapper). Grouped by option in
-    code after the call instead.
-    """
-
-    option: str = Field(description="Which decision option this tradeoff point is about.")
-    claim_id: str = Field(description="A claim id from the ledger backing this tradeoff point.")
-    direction: Literal["pro", "con"]
-
-
 class SynthesisOutput(BaseModel):
     """Output of the synthesize node's structured-output LLM call.
 
-    unresolved_disagreements is deliberately not part of this schema: it is
-    derived directly from the ledger's contested claims in code, rather than
-    left to the model to recall correctly.
+    Deliberately minimal. Two fields that were tried here and pulled back out:
+
+    - tradeoffs: a claim's `stance` already says which option it favors, so
+      the pro/con table is derived directly from the ledger in code (every
+      claim is a "pro" for the option it favors and a "con" for the others).
+      Asking the model to reproduce this as structured output was both
+      redundant and unreliable in practice: on a schema this size, tool-call
+      output twice came back malformed (once nested under a spurious
+      wrapper key, once double-encoded as a JSON string) and retried
+      identically each time, so it wasn't sampling noise, it was the model
+      of the moment consistently struggling with this exact shape.
+    - unresolved_disagreements: derived from the ledger's contested claims
+      in code, not left to the model to recall correctly.
     """
 
     recommended_option: Optional[str] = Field(
         default=None,
         description="One of the decision's options, or null if the ledger is genuinely balanced.",
     )
-    tradeoffs: list[TradeoffItem] = Field(
-        description="Every pro/con tradeoff point across all options, each citing a claim id from the ledger."
-    )
     confidence_note: str = Field(
-        description="Plain-language statement of how settled vs. contested the ledger is. "
+        description="Plain-language statement of how settled vs. contested the ledger is, citing claim ids. "
         "If recommended_option is null, explain why the ledger is genuinely balanced here."
     )
