@@ -115,7 +115,10 @@ function applyServerEvent(state: DebateUIState, event: ServerEvent): DebateUISta
       return {
         ...state,
         roundNumber: event.converged ? event.round : event.round + 1,
-        personaText: emptyPersonaRecord(""),
+        // only clear the panels when another round is actually about to
+        // start; on the final round, leave the last turns visible instead
+        // of blanking them out right as the recommendation appears
+        personaText: event.converged ? state.personaText : emptyPersonaRecord(""),
         personaTyping: emptyPersonaRecord(false),
         statusMessage: event.converged
           ? `Round ${event.round}: no new ground, converging`

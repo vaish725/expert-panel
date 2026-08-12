@@ -14,28 +14,49 @@ export function useDebateSocket(threadId: string | null) {
 
   useEffect(() => {
     if (!threadId) return;
-    let cancelled = false;
+    let closed = false;
+    let snapshotApplied = false;
+    const buffered: ServerEvent[] = [];
 
-    (async () => {
-      try {
-        const snapshot = await fetchDebateSnapshot(threadId);
-        if (!cancelled) dispatch({ kind: "snapshot", snapshot });
-      } catch {
-        // no checkpoint written yet (debate just started); the WS stream
-        // below still populates everything live from round 1
+    // the socket is created synchronously (not after an awaited fetch), so
+    // cleanup can always close it deterministically; if it were created
+    // after an await, a re-run of this effect (StrictMode double-invoke in
+    // dev, or any legitimate remount) could leave two live connections,
+    // since cleanup would run before socketRef.current was ever assigned
+    const socket = new WebSocket(debateStreamUrl(threadId));
+    socketRef.current = socket;
+
+    // buffer live events until the snapshot baseline is applied, so a
+    // slow snapshot fetch can never overwrite state a live event already
+    // advanced past
+    socket.onmessage = (message) => {
+      if (closed) return;
+      const event = JSON.parse(message.data) as ServerEvent;
+      if (!snapshotApplied) {
+        buffered.push(event);
+        return;
       }
+      dispatch({ kind: "server_event", event });
+    };
 
-      const socket = new WebSocket(debateStreamUrl(threadId));
-      socketRef.current = socket;
-      socket.onmessage = (message) => {
-        const event = JSON.parse(message.data) as ServerEvent;
-        dispatch({ kind: "server_event", event });
-      };
-    })();
+    fetchDebateSnapshot(threadId)
+      .then((snapshot) => {
+        if (!closed) dispatch({ kind: "snapshot", snapshot });
+      })
+      .catch(() => {
+        // no checkpoint written yet (debate just started); live events
+        // populate everything from round 1 regardless
+      })
+      .finally(() => {
+        if (closed) return;
+        snapshotApplied = true;
+        for (const event of buffered) dispatch({ kind: "server_event", event });
+        buffered.length = 0;
+      });
 
     return () => {
-      cancelled = true;
-      socketRef.current?.close();
+      closed = true;
+      socket.close();
       socketRef.current = null;
     };
   }, [threadId]);

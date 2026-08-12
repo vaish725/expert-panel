@@ -65,8 +65,16 @@ class RoundExtraction(BaseModel):
 
 
 class TradeoffItem(BaseModel):
-    """One pro/con line in the synthesis tradeoff table, citing its source claim."""
+    """One pro/con line in the synthesis tradeoff table, citing its source claim.
 
+    Flat list with an explicit `option` field rather than a dict keyed by
+    option name: a dynamic dict[str, list[...]] schema is unreliable for
+    tool-calling structured output (models occasionally nest the whole
+    payload under a spurious "parameters" wrapper). Grouped by option in
+    code after the call instead.
+    """
+
+    option: str = Field(description="Which decision option this tradeoff point is about.")
     claim_id: str = Field(description="A claim id from the ledger backing this tradeoff point.")
     direction: Literal["pro", "con"]
 
@@ -83,8 +91,8 @@ class SynthesisOutput(BaseModel):
         default=None,
         description="One of the decision's options, or null if the ledger is genuinely balanced.",
     )
-    tradeoffs: dict[str, list[TradeoffItem]] = Field(
-        description="Per-option pros/cons, each citing a claim id from the ledger."
+    tradeoffs: list[TradeoffItem] = Field(
+        description="Every pro/con tradeoff point across all options, each citing a claim id from the ledger."
     )
     confidence_note: str = Field(
         description="Plain-language statement of how settled vs. contested the ledger is. "

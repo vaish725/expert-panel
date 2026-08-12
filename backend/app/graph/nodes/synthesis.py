@@ -47,12 +47,15 @@ async def synthesize_node(state: DecisionState) -> dict:
     # derived directly from the ledger, not left to the model to recall
     unresolved_disagreements = [c["id"] for c in state["claims_ledger"] if c["contested"]]
 
+    # group the model's flat tradeoff list back into the per-option shape
+    # the rest of the app (state schema, report, frontend) expects
+    tradeoffs_by_option: dict[str, list[dict]] = {option: [] for option in state["options"]}
+    for item in output.tradeoffs:
+        tradeoffs_by_option.setdefault(item.option, []).append({"claim_id": item.claim_id, "direction": item.direction})
+
     recommendation: StructuredRecommendation = {
         "recommended_option": output.recommended_option,
-        "tradeoffs": {
-            option: [{"claim_id": item.claim_id, "direction": item.direction} for item in items]
-            for option, items in output.tradeoffs.items()
-        },
+        "tradeoffs": tradeoffs_by_option,
         "unresolved_disagreements": unresolved_disagreements,
         "confidence_note": output.confidence_note,
     }
